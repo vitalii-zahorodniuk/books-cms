@@ -1,0 +1,96 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Permission {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  id: ID!
+  name: String!
+  description: String
+  roles: [Role!]!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Role {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  id: ID!
+  name: String!
+  description: String
+  permissions: [Permission!]!
+  users: [User!]!
+}
+
+type User {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  id: ID!
+  email: String!
+  isActive: Boolean!
+  roles: [Role!]!
+}
+
+type Author {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  id: ID!
+  name: String!
+}
+
+type Book {
+  id: ID!
+  title: String!
+  description: String
+  year: Float!
+  authors: [Author!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Query {
+  books(skip: Int! = 0, take: Int! = 10, filter: BookFilterInput, sort: BookSortInput): [Book!]!
+  book(id: String!): Book!
+}
+
+input BookFilterInput {
+  title: String
+  yearFrom: Float
+  yearTo: Float
+  authorId: String
+}
+
+input BookSortInput {
+  title: SortOrder
+  year: SortOrder
+  createdAt: SortOrder
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+type Mutation {
+  createBook(createBookInput: CreateBookInput!): Book!
+  updateBook(id: String!, input: UpdateBookInput!): Book!
+  deleteBook(id: String!): Boolean!
+}
+
+input CreateBookInput {
+  title: String!
+  description: String
+  year: Float!
+  authorIds: [String!]
+}
+
+input UpdateBookInput {
+  title: String
+  description: String
+  year: Float
+  authorIds: [String!]
+}

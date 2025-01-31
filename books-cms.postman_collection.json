@@ -1,0 +1,162 @@
+{
+  "info": {
+    "name": "Books CMS",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"admin123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Login (User)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"user123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "Get Books (with filters)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetBooks($skip: Int, $take: Int, $filter: BookFilterInput, $sort: BookSortInput) {\n  books(skip: $skip, take: $take, filter: $filter, sort: $sort) {\n    id\n    title\n    description\n    year\n    createdAt\n    updatedAt\n    authors {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n}",
+                "variables": "{\n  \"skip\": 0,\n  \"take\": 10,\n  \"filter\": {\n    \"title\": \"of\",\n    \"yearFrom\": 1900,\n    \"yearTo\": 2024\n  },\n  \"sort\": {\n    \"title\": \"ASC\",\n    \"year\": \"DESC\",\n    \"createdAt\": \"DESC\"\n  }\n}"
+              }
+            },
+            "url": "{{baseUrl}}/graphql"
+          }
+        },
+        {
+          "name": "Get Book by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query GetBook($id: String!) {\n  book(id: $id) {\n    id\n    title\n    description\n    year\n    createdAt\n    updatedAt\n    authors {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n}",
+                "variables": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\"\n}"
+              }
+            },
+            "url": "{{baseUrl}}/graphql"
+          }
+        },
+        {
+          "name": "Create Book",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateBook($createBookInput: CreateBookInput!) {\n  createBook(createBookInput: $createBookInput) {\n    id\n    title\n    description\n    year\n    createdAt\n    updatedAt\n    authors {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n}",
+                "variables": "{\n  \"createBookInput\": {\n    \"title\": \"New Book Title\",\n    \"description\": \"Book description\",\n    \"year\": 2024,\n    \"authorIds\": [\"ee69cb23-6b79-4c1b-9630-d2e79312f760\"]\n  }\n}"
+              }
+            },
+            "url": "{{baseUrl}}/graphql"
+          }
+        },
+        {
+          "name": "Update Book",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation UpdateBook($id: String!, $input: UpdateBookInput!) {\n  updateBook(id: $id, input: $input) {\n    id\n    title\n    description\n    year\n    createdAt\n    updatedAt\n    authors {\n      id\n      name\n      createdAt\n      updatedAt\n    }\n  }\n}",
+                "variables": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"input\": {\n    \"title\": \"Updated Book Title\",\n    \"description\": \"Updated description\",\n    \"year\": 2024,\n    \"authorIds\": []\n  }\n}"
+              }
+            },
+            "url": "{{baseUrl}}/graphql"
+          }
+        },
+        {
+          "name": "Delete Book",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation DeleteBook($id: String!) {\n  deleteBook(id: $id)\n}",
+                "variables": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\"\n}"
+              }
+            },
+            "url": "{{baseUrl}}/graphql"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": "your-jwt-token-here"
+    }
+  ]
+} 
