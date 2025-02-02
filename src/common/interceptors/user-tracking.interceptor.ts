@@ -2,6 +2,7 @@ import {
   CallHandler,
   ExecutionContext,
   Injectable,
+  Logger,
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
@@ -11,6 +12,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 import { GraphQLResolveInfo } from 'graphql';
 
+// represents user context in graphql requests
 interface GqlContext {
   req: {
     user: {
@@ -19,6 +21,7 @@ interface GqlContext {
   };
 }
 
+// base structure for trackable entities
 interface BaseEntity {
   id: string;
   createdBy?: unknown;
@@ -26,22 +29,28 @@ interface BaseEntity {
 
 @Injectable()
 export class UserTrackingInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(UserTrackingInterceptor.name);
+
   constructor(
     @InjectEntityManager() private readonly entityManager: EntityManager,
   ) {}
 
+  // handles entity tracking across graphql operations
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = GqlExecutionContext.create(context);
     const gqlContext = ctx.getContext<GqlContext>();
     const info = ctx.getInfo<GraphQLResolveInfo>();
 
+    // skip if context is insufficient
     if (!gqlContext?.req?.user || !info?.returnType) {
       return next.handle();
     }
 
+    // clean up type name for db operations
     const returnType = info.returnType.toString().replace(/[[\]!]/g, '');
     const user = gqlContext.req.user;
 
+    // track changes after successful execution
     return next.handle().pipe(
       tap({
         next: (data: unknown) => {
@@ -51,6 +60,7 @@ export class UserTrackingInterceptor implements NestInterceptor {
     );
   }
 
+  // updates entity tracking metadata
   private async handleData(
     data: unknown,
     returnType: string,
@@ -59,7 +69,10 @@ export class UserTrackingInterceptor implements NestInterceptor {
     if (!data) return;
 
     try {
+      // normalize input to array
       const items = Array.isArray(data) ? data : [data];
+
+      // extract valid entity ids
       const ids = items
         .filter(
           (item: unknown): item is BaseEntity =>
@@ -71,6 +84,7 @@ export class UserTrackingInterceptor implements NestInterceptor {
         .map((item: BaseEntity) => item.id);
 
       if (ids.length > 0) {
+        // bulk update tracking fields
         const query = this.entityManager
           .createQueryBuilder()
           .update(returnType)
@@ -84,7 +98,10 @@ export class UserTrackingInterceptor implements NestInterceptor {
         await query.execute();
       }
     } catch (error) {
-      console.error('Error in interceptor:', error);
+      this.logger.error(
+        `failed to track user data: ${error.message}`,
+        error.stack,
+      );
     }
   }
 }

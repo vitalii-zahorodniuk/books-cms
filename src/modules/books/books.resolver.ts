@@ -7,6 +7,7 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
+import { Injectable, Logger } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { Book as BookModel } from './dto/book.model';
 import { CreateBookInput } from './dto/create-book.input';
@@ -21,9 +22,13 @@ import { GraphQLResolveInfo } from 'graphql';
 import { TrackActivity } from 'src/decorators/track-activity.decorator';
 
 @Resolver(() => BookModel)
+@Injectable()
 export class BooksResolver {
+  private readonly logger = new Logger(BooksResolver.name);
+
   constructor(private readonly booksService: BooksService) {}
 
+  // handles paginated book queries with filters
   @Permissions(Permission.LIST_BOOKS)
   @Query(() => [BookModel])
   @TrackActivity('view_books')
@@ -33,20 +38,43 @@ export class BooksResolver {
     @Args('sort', { nullable: true }) sort?: BookSortInput,
     @Info() info?: GraphQLResolveInfo,
   ): Promise<BookModel[]> {
-    const relations: string[] = [];
-    if (info && this.hasField(info, 'authors')) {
-      relations.push('authors');
+    try {
+      const relations: string[] = [];
+      if (info && this.hasField(info, 'authors')) {
+        relations.push('authors');
+        this.logger.debug('including authors in book query');
+      }
+
+      const books = await this.booksService.findAll(
+        paginationArgs,
+        filter,
+        sort,
+        relations,
+      );
+      this.logger.debug(`retrieved ${books.length} books`);
+      return books;
+    } catch (error) {
+      this.logger.error('failed to fetch books', error.stack);
+      throw error;
     }
-    return this.booksService.findAll(paginationArgs, filter, sort, relations);
   }
 
+  // fetches single book by id
   @Permissions(Permission.READ_BOOK)
   @Query(() => BookModel)
   @TrackActivity('view_book')
   async book(@Args('id') id: string): Promise<BookModel> {
-    return this.booksService.findOne(id);
+    try {
+      const book = await this.booksService.findOne(id);
+      this.logger.debug(`retrieved book ${id}`);
+      return book;
+    } catch (error) {
+      this.logger.error(`failed to fetch book ${id}`, error.stack);
+      throw error;
+    }
   }
 
+  // handles book creation
   @Permissions(Permission.CREATE_BOOK)
   @TrackUser()
   @Mutation(() => BookModel)
@@ -54,9 +82,17 @@ export class BooksResolver {
   async createBook(
     @Args('createBookInput') createBookInput: CreateBookInput,
   ): Promise<BookModel> {
-    return this.booksService.create(createBookInput);
+    try {
+      const book = await this.booksService.create(createBookInput);
+      this.logger.debug(`created book ${book.id}`);
+      return book;
+    } catch (error) {
+      this.logger.error('failed to create book', error.stack);
+      throw error;
+    }
   }
 
+  // handles book updates
   @Permissions(Permission.UPDATE_BOOK)
   @TrackUser()
   @Mutation(() => BookModel)
@@ -65,24 +101,50 @@ export class BooksResolver {
     @Args('id') id: string,
     @Args('input') input: UpdateBookInput,
   ): Promise<BookModel> {
-    return this.booksService.update(id, input);
+    try {
+      const book = await this.booksService.update(id, input);
+      this.logger.debug(`updated book ${id}`);
+      return book;
+    } catch (error) {
+      this.logger.error(`failed to update book ${id}`, error.stack);
+      throw error;
+    }
   }
 
+  // handles book deletion
   @Permissions(Permission.DELETE_BOOK)
   @Mutation(() => Boolean)
   @TrackActivity('delete_book')
   async deleteBook(@Args('id') id: string): Promise<boolean> {
-    return this.booksService.delete(id);
+    try {
+      const result = await this.booksService.delete(id);
+      this.logger.debug(`deletion result for book ${id}: ${result}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`failed to delete book ${id}`, error.stack);
+      throw error;
+    }
   }
 
+  // resolves book authors
   @ResolveField('authors', () => [Author])
   async getAuthors(@Parent() book: BookModel) {
-    if (!book.authors) {
-      return [];
+    try {
+      if (!book.authors) {
+        this.logger.debug(`no authors found for book ${book.id}`);
+        return [];
+      }
+      return book.authors;
+    } catch (error) {
+      this.logger.error(
+        `failed to resolve authors for book ${book.id}`,
+        error.stack,
+      );
+      throw error;
     }
-    return book.authors;
   }
 
+  // checks if field exists in graphql query
   private hasField(info: GraphQLResolveInfo, fieldName: string): boolean {
     const selections = info.fieldNodes[0].selectionSet?.selections || [];
     return selections.some(

@@ -20,7 +20,7 @@ import { GqlThrottlerGuard } from './common/guards/throttler.guard';
 import { createKeyv } from '@keyv/redis';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { ActivityModule } from './modules/activity/activity.module';
-import { getDynamoDBConfig } from './config/dynamodb.config';
+import { DynamoDBConfig } from './config/dynamodb.config';
 
 @Module({
   imports: [
@@ -75,9 +75,10 @@ import { getDynamoDBConfig } from './config/dynamodb.config';
     DynamooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: getDynamoDBConfig,
+      useFactory: DynamoDBConfig.useFactory,
     }),
     ActivityModule,
+    ...DynamoDBConfig.imports,
   ],
   providers: [
     // register interceptor globally to track all entity changes

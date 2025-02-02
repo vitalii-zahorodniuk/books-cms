@@ -1,5 +1,6 @@
 import { Schema } from 'dynamoose';
 
+// schema for book reviews in dynamodb
 export const BookReviewSchema = new Schema({
   bookId: {
     type: String,
@@ -8,12 +9,23 @@ export const BookReviewSchema = new Schema({
   userId: {
     type: String,
     rangeKey: true,
+    index: {
+      name: 'userReviewsIndex',
+      type: 'global',
+      rangeKey: 'createdAt',
+    },
   },
-  rating: Number,
-  review: String,
+  rating: {
+    type: Number,
+    required: true,
+  },
+  review: {
+    type: String,
+  },
+  // use custom date field instead of timestamp
   createdAt: {
-    type: Date,
-    default: Date.now,
+    type: String,
+    default: () => new Date().toISOString(),
   },
 });
 
@@ -22,5 +34,5 @@ export interface BookReview {
   userId: string;
   rating: number;
   review?: string;
-  createdAt: Date;
+  createdAt: string;
 }
