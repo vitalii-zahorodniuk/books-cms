@@ -1,5 +1,6 @@
 import {
   Args,
+  Context,
   Info,
   Mutation,
   Parent,
@@ -37,6 +38,7 @@ export class BooksResolver {
   @Query(() => [BookModel])
   @TrackActivity('view_books')
   async books(
+    @Context() context: any,
     @Args() paginationArgs: PaginationArgs,
     @Args('filter', { nullable: true }) filter?: BookFilterInput,
     @Args('sort', { nullable: true }) sort?: BookSortInput,
@@ -67,7 +69,10 @@ export class BooksResolver {
   @Permissions(Permission.READ_BOOK)
   @Query(() => BookModel)
   @TrackActivity('view_book')
-  async book(@Args('id') id: string): Promise<BookModel> {
+  async book(
+    @Args('id') id: string,
+    @Context() context: any,
+  ): Promise<BookModel> {
     try {
       const book = await this.booksService.findOne(id);
       this.logger.debug(`retrieved book ${id}`);
@@ -85,6 +90,7 @@ export class BooksResolver {
   @TrackActivity('create_book')
   async createBook(
     @Args('createBookInput') createBookInput: CreateBookInput,
+    @Context() context: any,
   ): Promise<BookModel> {
     try {
       const book = await this.booksService.create(createBookInput);
@@ -104,6 +110,7 @@ export class BooksResolver {
   async updateBook(
     @Args('id') id: string,
     @Args('input') input: UpdateBookInput,
+    @Context() context: any,
   ): Promise<BookModel> {
     try {
       const book = await this.booksService.update(id, input);
@@ -119,7 +126,10 @@ export class BooksResolver {
   @Permissions(Permission.DELETE_BOOK)
   @Mutation(() => Boolean)
   @TrackActivity('delete_book')
-  async deleteBook(@Args('id') id: string): Promise<boolean> {
+  async deleteBook(
+    @Args('id') id: string,
+    @Context() context: any,
+  ): Promise<boolean> {
     try {
       const result = await this.booksService.delete(id);
       this.logger.debug(`deletion result for book ${id}: ${result}`);
@@ -132,7 +142,7 @@ export class BooksResolver {
 
   // resolves book authors
   @ResolveField('authors', () => [Author])
-  async getAuthors(@Parent() book: BookModel) {
+  async getAuthors(@Parent() book: BookModel, @Context() context: any) {
     try {
       if (!book.authors) {
         this.logger.debug(`no authors found for book ${book.id}`);

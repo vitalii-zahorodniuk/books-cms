@@ -7,12 +7,6 @@ const getDynamoConfig = (configService: ConfigService) => {
   const logger = new Logger('DynamoDB');
   const isDevMode = configService.get('NODE_ENV') === 'development';
 
-  logger.debug('Initializing DynamoDB with config:', {
-    region: configService.get('AWS_REGION'),
-    endpoint: configService.get('DYNAMODB_ENDPOINT'),
-    local: isDevMode,
-  });
-
   return {
     aws: {
       region: configService.get<string>('AWS_REGION'),
@@ -31,7 +25,6 @@ const getDynamoConfig = (configService: ConfigService) => {
     local: isDevMode,
     // auto-creates tables in development mode
     create: isDevMode,
-    prefix: `${configService.get('NODE_ENV')}_`,
   };
 };
 

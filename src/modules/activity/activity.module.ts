@@ -12,7 +12,6 @@ import { ActivityLogSchema } from './schemas/activity-log.schema';
         schema: BookReviewSchema,
         options: {
           tableName: 'book_reviews',
-          create: true,
         },
       },
       {
@@ -20,7 +19,6 @@ import { ActivityLogSchema } from './schemas/activity-log.schema';
         schema: ActivityLogSchema,
         options: {
           tableName: 'activity_logs',
-          create: true,
         },
       },
     ]),

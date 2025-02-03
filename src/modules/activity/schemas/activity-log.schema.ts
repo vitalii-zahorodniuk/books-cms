@@ -2,37 +2,35 @@ import { Schema } from 'dynamoose';
 
 export const ActivityLogSchema = new Schema(
   {
-    userId: {
+    entityId: {
       type: String,
       hashKey: true,
     },
     timestamp: {
-      type: Date,
+      type: String,
       rangeKey: true,
-      default: Date.now,
+      default: () => new Date().toISOString(),
     },
     action: {
       type: String,
       required: true,
-      index: {
-        name: 'actionIndex',
-        type: 'global',
-        rangeKey: 'timestamp',
-      },
+    },
+    userId: {
+      type: String,
     },
     details: {
-      type: Object,
-      default: {},
+      type: String,
     },
   },
   {
-    timestamps: true,
+    saveUnknown: ['details.**'],
   },
 );
 
 export interface ActivityLog {
-  userId: string;
-  timestamp: Date;
+  entityId: string;
+  timestamp: string;
   action: string;
-  details: any;
+  userId: string;
+  details: string;
 }
