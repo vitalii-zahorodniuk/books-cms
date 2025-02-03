@@ -1,28 +1,47 @@
 import { DynamooseModule } from 'nestjs-dynamoose';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Logger } from '@nestjs/common';
 
-// factory function for dynamodb configuration
-// handles both local development and production environments
-const getDynamoConfig = (configService: ConfigService) => ({
-  aws: {
-    region: configService.get<string>('AWS_REGION'),
-    accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
-    secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
-  },
-  // enables local dynamodb for development
-  local: configService.get('NODE_ENV') === 'development',
-  // allows custom endpoint for local development or testing
-  endpoint: configService.get<string>('DYNAMODB_ENDPOINT'),
-  // auto-creates tables in development mode
-  create: configService.get('NODE_ENV') === 'development',
-});
+// dynamodb configuration
+const getDynamoConfig = (configService: ConfigService) => {
+  const logger = new Logger('DynamoDB');
+  const isDevMode = configService.get('NODE_ENV') === 'development';
+
+  logger.debug('Initializing DynamoDB with config:', {
+    region: configService.get('AWS_REGION'),
+    endpoint: configService.get('DYNAMODB_ENDPOINT'),
+    local: isDevMode,
+  });
+
+  return {
+    aws: {
+      region: configService.get<string>('AWS_REGION'),
+      accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
+      secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
+      endpoint: configService.get<string>('DYNAMODB_ENDPOINT'),
+      logger: isDevMode
+        ? {
+            log: (message: string) => logger.debug(message),
+            warn: (message: string) => logger.warn(message),
+            error: (message: string) => logger.error(message),
+          }
+        : undefined,
+    },
+    // enables local dynamodb for development
+    local: isDevMode,
+    // auto-creates tables in development mode
+    create: isDevMode,
+    prefix: `${configService.get('NODE_ENV')}_`,
+  };
+};
 
 // exports configuration for both module imports and async factory
 export const DynamoDBConfig = {
   imports: [
     DynamooseModule.forRootAsync({
-      useFactory: getDynamoConfig,
+      imports: [ConfigModule],
       inject: [ConfigService],
+      useFactory: getDynamoConfig,
     }),
   ],
   useFactory: getDynamoConfig,

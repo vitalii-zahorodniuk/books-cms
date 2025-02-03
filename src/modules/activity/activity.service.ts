@@ -60,16 +60,23 @@ export class ActivityService {
         .eq(userId)
         .exec();
 
+      this.logger.debug('Creating review with data:', reviewData);
+
       const result = existingReview
-        ? await this.reviewModel.update({ ...reviewData, bookId: existingReview.bookId })
+        ? await this.reviewModel.update({
+            ...reviewData,
+            bookId: existingReview.bookId,
+          })
         : await this.reviewModel.create(reviewData);
 
+      this.logger.debug('Review created/updated:', result);
       return result as BookReview;
     } catch (error) {
-      this.logger.error(
-        `Failed to create/update review: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error('DynamoDB Error:', {
+        message: error.message,
+        code: error.code,
+        statusCode: error.statusCode,
+      });
       throw error;
     }
   }

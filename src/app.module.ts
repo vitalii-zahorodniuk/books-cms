@@ -18,7 +18,6 @@ import Redis from 'ioredis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { GqlThrottlerGuard } from './common/guards/throttler.guard';
 import { createKeyv } from '@keyv/redis';
-import { DynamooseModule } from 'nestjs-dynamoose';
 import { ActivityModule } from './modules/activity/activity.module';
 import { DynamoDBConfig } from './config/dynamodb.config';
 
@@ -27,6 +26,7 @@ import { DynamoDBConfig } from './config/dynamodb.config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ...DynamoDBConfig.imports,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -72,13 +72,7 @@ import { DynamoDBConfig } from './config/dynamodb.config';
         ttl: 24 * 60 * 60 * 1000, // 24 hours
       }),
     }),
-    DynamooseModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: DynamoDBConfig.useFactory,
-    }),
     ActivityModule,
-    ...DynamoDBConfig.imports,
   ],
   providers: [
     // register interceptor globally to track all entity changes

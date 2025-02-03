@@ -20,13 +20,17 @@ import { Author } from '../../entities/author.entity';
 import { TrackUser } from '../../common/decorators/track-user.decorator';
 import { GraphQLResolveInfo } from 'graphql';
 import { TrackActivity } from 'src/decorators/track-activity.decorator';
+import { ActivityService } from '../activity/activity.service';
 
 @Resolver(() => BookModel)
 @Injectable()
 export class BooksResolver {
   private readonly logger = new Logger(BooksResolver.name);
 
-  constructor(private readonly booksService: BooksService) {}
+  constructor(
+    private readonly booksService: BooksService,
+    private readonly activityService: ActivityService,
+  ) {}
 
   // handles paginated book queries with filters
   @Permissions(Permission.LIST_BOOKS)

@@ -1,33 +1,39 @@
 import { Schema } from 'dynamoose';
 
 // schema for book reviews in dynamodb
-export const BookReviewSchema = new Schema({
-  bookId: {
-    type: String,
-    hashKey: true,
-  },
-  userId: {
-    type: String,
-    rangeKey: true,
-    index: {
-      name: 'userReviewsIndex',
-      type: 'global',
-      rangeKey: 'createdAt',
+export const BookReviewSchema = new Schema(
+  {
+    bookId: {
+      type: String,
+      hashKey: true,
+    },
+    userId: {
+      type: String,
+      rangeKey: true,
+      index: {
+        name: 'userReviewsIndex',
+        type: 'global',
+        rangeKey: 'createdAt',
+      },
+    },
+    rating: {
+      type: Number,
+      required: true,
+    },
+    review: {
+      type: String,
+    },
+    // use custom date field instead of timestamp
+    createdAt: {
+      type: String,
+      default: () => new Date().toISOString(),
     },
   },
-  rating: {
-    type: Number,
-    required: true,
+  {
+    timestamps: false,
+    saveUnknown: false,
   },
-  review: {
-    type: String,
-  },
-  // use custom date field instead of timestamp
-  createdAt: {
-    type: String,
-    default: () => new Date().toISOString(),
-  },
-});
+);
 
 export interface BookReview {
   bookId: string;

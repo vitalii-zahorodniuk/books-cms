@@ -1,0 +1,68 @@
+{
+    "TableDescription": {
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "bookId",
+                "AttributeType": "S"
+            },
+            {
+                "AttributeName": "userId",
+                "AttributeType": "S"
+            },
+            {
+                "AttributeName": "createdAt",
+                "AttributeType": "S"
+            }
+        ],
+        "TableName": "dev_book_reviews",
+        "KeySchema": [
+            {
+                "AttributeName": "bookId",
+                "KeyType": "HASH"
+            },
+            {
+                "AttributeName": "userId",
+                "KeyType": "RANGE"
+            }
+        ],
+        "TableStatus": "ACTIVE",
+        "CreationDateTime": "2025-02-02T17:45:16.324000+02:00",
+        "ProvisionedThroughput": {
+            "LastIncreaseDateTime": "1970-01-01T02:00:00+02:00",
+            "LastDecreaseDateTime": "1970-01-01T02:00:00+02:00",
+            "NumberOfDecreasesToday": 0,
+            "ReadCapacityUnits": 0,
+            "WriteCapacityUnits": 0
+        },
+        "TableSizeBytes": 0,
+        "ItemCount": 0,
+        "TableArn": "arn:aws:dynamodb:ddblocal:000000000000:table/dev_book_reviews",
+        "BillingModeSummary": {
+            "BillingMode": "PAY_PER_REQUEST",
+            "LastUpdateToPayPerRequestDateTime": "2025-02-02T17:45:16.324000+02:00"
+        },
+        "GlobalSecondaryIndexes": [
+            {
+                "IndexName": "userReviewsIndex",
+                "KeySchema": [
+                    {
+                        "AttributeName": "userId",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "createdAt",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "Projection": {
+                    "ProjectionType": "ALL"
+                },
+                "IndexStatus": "ACTIVE",
+                "IndexSizeBytes": 0,
+                "ItemCount": 0,
+                "IndexArn": "arn:aws:dynamodb:ddblocal:000000000000:table/dev_book_reviews/index/userReviewsIndex"
+            }
+        ],
+        "DeletionProtectionEnabled": false
+    }
+}
