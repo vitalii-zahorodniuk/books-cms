@@ -21,14 +21,14 @@ export class AuthController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @TrackActivity('user_register')
-  register() {
+  async register() {
     throw new Error('Not implemented');
   }
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   @TrackActivity('reset_password_request')
-  resetPassword() {
+  async resetPassword() {
     throw new Error('Not implemented');
   }
 }
