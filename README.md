@@ -26,7 +26,7 @@ A simple Books CMS built with NestJS, GraphQL, PostgreSQL, Redis, and DynamoDB.
 ## Prerequisites
 
 - Node.js 22 LTS
-- PostgreSQL 16
+- PostgreSQL 17
 - Redis 7
 - DynamoDB Local
 - AWS Account (for production)
